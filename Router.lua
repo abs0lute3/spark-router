@@ -9,8 +9,8 @@ local CONFIG = {
     BIKE = {
         gameIds = {10768284407},
         placeIds = {98628861455414},
-        raw_url = "",
-        key = "",
+        raw_url = "https://raw.githubusercontent.com/abs0lute3/spark-router/main/payloads/bike-v1.enc",
+        key = "dqMkthmlvcv@XKAU0duIV2LJ",
         encrypted = true,
     },
 }
@@ -98,8 +98,18 @@ if inList(gid, CONFIG.DANDY.gameIds) or inList(pid, CONFIG.DANDY.placeIds) then
     if not fn then error("[SparkRouter] compile failed: " .. tostring(err)) end
     return fn()
 elseif inList(gid, CONFIG.BIKE.gameIds) or inList(pid, CONFIG.BIKE.placeIds) then
-    notify("SparkRouter", "Bike Universe support coming soon", 6)
-    return
+    notify("SparkRouter", "Bike Universe detected, loading latest update", 5)
+    local blob = httpGet(CONFIG.BIKE.raw_url)
+    assert(type(blob) == "string" and #blob > 0, "[SparkRouter] empty response")
+    local source = blob
+    if CONFIG.BIKE.encrypted then
+        source = xorCrypt(b64d(blob), CONFIG.BIKE.key)
+    end
+    assert(type(source) == "string" and #source > 0, "[SparkRouter] decrypt failed")
+    notify("SparkRouter", "Fetched " .. #source .. " bytes, executing", 5)
+    local fn, err = loadstring(source)
+    if not fn then error("[SparkRouter] compile failed: " .. tostring(err)) end
+    return fn()
 else
     notify("SparkRouter", "Unsupported game " .. tostring(gid), 8)
     return
