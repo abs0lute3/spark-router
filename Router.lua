@@ -21,11 +21,6 @@ local function notify(title, text, duration)
     end)
     print("[SparkRouter] " .. tostring(title) .. " - " .. tostring(text))
 end
-local function yield()
-    pcall(function()
-        task.wait()
-    end)
-end
 local function httpGet(url)
     local ok, res = pcall(function()
         if type(request) == "function" then
@@ -64,7 +59,7 @@ local REV = {}
 for i = 1, #B64 do REV[B64:sub(i, i)] = i - 1 end
 local function b64d(data)
     data = data:gsub("%s+", "")
-    local out, i, n = {}, 1, 0
+    local out, i = {}, 1
     while i <= #data do
         local c1 = REV[data:sub(i, i)] or 0
         local c2 = REV[data:sub(i + 1, i + 1)] or 0
@@ -78,8 +73,6 @@ local function b64d(data)
         if pad < 2 then out[#out + 1] = string.char(math.floor(t / 256) % 256) end
         if pad < 1 then out[#out + 1] = string.char(t % 256) end
         i = i + 4
-        n = n + 1
-        if n % 4096 == 0 then yield() end
     end
     return table.concat(out)
 end
@@ -98,7 +91,6 @@ local function xorCrypt(data, key)
             end
         end
         out[i] = string.char(r)
-        if i % 8192 == 0 then yield() end
     end
     return table.concat(out)
 end
@@ -110,14 +102,12 @@ local function inList(id, list)
 end
 local function run(entry, label)
     notify("SparkRouter", label .. " detected, downloading update", 5)
-    yield()
     local blob, err = httpGet(entry.raw_url)
     if not blob then
         notify("SparkRouter", "Download failed: " .. tostring(err):sub(1, 120), 8)
         return
     end
     notify("SparkRouter", "Downloaded " .. #blob .. " bytes, decrypting", 5)
-    yield()
     if not validPayload(blob) then
         notify("SparkRouter", "Payload invalid, got " .. #blob .. " bytes starting with: " .. blob:sub(1, 60), 8)
         return
@@ -134,7 +124,6 @@ local function run(entry, label)
         source = res
     end
     notify("SparkRouter", "Decrypted " .. #source .. " bytes, executing", 5)
-    yield()
     local fn, compErr = loadstring(source)
     if not fn then
         notify("SparkRouter", "Compile failed: " .. tostring(compErr):sub(1, 200), 8)
