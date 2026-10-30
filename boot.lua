@@ -1,5 +1,5 @@
-local BOOT_URL = "https://raw.githubusercontent.com/abs0lute3/spark-router/main/Router.enc"
-local BOOT_KEY = "lCQEIk%5l8-$DxEEIu7Pkdrr"
+local BOOT_URL = "https://raw.githubusercontent.com/abs0lute3/spark-router/main/boot.enc"
+local BOOT_KEY = "7-PnyQOZxi07jGsU@BxACSG3"
 local function httpGet(url)
     if type(request) == "function" then
         local r = request({Url = url, Method = "GET", Timeout = 20})
