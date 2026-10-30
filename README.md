@@ -18,6 +18,7 @@ In no event shall the authors or copyright holders be liable for any claim, dama
 | `BikeUniverse.lua` | Bike script source, obfuscated with luaobfuscator.com. One fetch, runs. |
 | `Text Lines.txt` | Shelly's lines, sorted by action. Add a line, she says it. |
 | `Shelly.png` | Her portrait for the hub panel. |
+| `rayfield.lua` | The UI library, mirrored here so the hub does not depend on sirius.menu. |
 
 No router, no multi-hop fetching, no notifications — each file is fully self-contained: download, execute.
 
