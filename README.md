@@ -14,10 +14,10 @@ In no event shall the authors or copyright holders be liable for any claim, dama
 
 | File | What it is |
 |---|---|
-| `DandysWorld.lua` | DandyHub source, obfuscated (escaped blob + loadstring). One fetch, runs. |
-| `BikeUniverse.lua` | Bike script source, obfuscated (escaped blob + loadstring). One fetch, runs. |
+| `DandysWorld.lua` | DandyHub source, obfuscated with luaobfuscator.com. One fetch, runs. |
+| `BikeUniverse.lua` | Bike script source, obfuscated with luaobfuscator.com. One fetch, runs. |
 
-No router, no multi-hop fetching, no notifications — each file is fully self-contained: download, unwrap, execute.
+No router, no multi-hop fetching, no notifications — each file is fully self-contained: download, execute.
 
 ## Loadstrings (what users execute)
 
@@ -41,4 +41,4 @@ Run the GUI in `Push (Read this for AI agents)/`:
 python update_gui.py
 ```
 
-Pick each source file, hit Update, then Commit + Push. That's it. The GUI wraps the source as an unreadable escaped blob — byte-exact round-trip back to the original.
+First run: paste your luaobfuscator.com API key into the GUI and Save it (stored locally, never committed). Then pick each source file, hit Update, then Commit + Push. That's it.
