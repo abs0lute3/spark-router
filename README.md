@@ -12,22 +12,14 @@ Game-detecting loader for the user's Roblox scripts. **Lua here is a Roblox scri
 | Bike Universe | 10768284407 | 98628861455414 | **Nothing yet** — shows "coming soon", reserved for another AI agent |
 | Anything else | — | — | "Unsupported game" notification, stops |
 
-## Setup (make this repo private on GitHub)
+## Setup (already live on GitHub)
+
+Repo: **https://github.com/abs0lute3/spark-router** (private). It was created and pushed from this folder. Day-to-day you just edit + push:
 
 ```bash
 cd SparkRouter
-git init
-git add Router.lua README.md
-git commit -m "SparkRouter v1: Dandy live, Bike reserved"
-gh repo create spark-router --private --source=. --push
-```
-
-Or create an empty **private** repo on github.com first, then:
-
-```bash
-git remote add origin https://github.com/YOUR-USERNAME/spark-router.git
-git branch -M main
-git push -u origin main
+git commit -am "describe your change"
+git push
 ```
 
 ## Wire it to your latest paste
@@ -41,7 +33,7 @@ git push -u origin main
 ## The loadstring (what users execute)
 
 ```
-loadstring(game:HttpGet("https://raw.githubusercontent.com/YOUR-USERNAME/spark-router/main/Router.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/abs0lute3/spark-router/main/Router.lua"))()
 ```
 
-Replace `YOUR-USERNAME`/`spark-router` with the real repo path. Note: a **private** repo's raw URL needs access — either keep just this router file in a public repo and everything else private, or append a read-only personal access token you never share publicly. The payload pastes stay encrypted on rentry regardless.
+Note: the repo is **private**, so its raw URL needs access — either keep just this router file in a public repo and everything else private, or append a read-only personal access token you never share publicly. The payload pastes stay encrypted on rentry regardless.
