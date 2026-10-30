@@ -21,27 +21,50 @@ local function notify(title, text, duration)
     end)
     print("[SparkRouter] " .. tostring(title) .. " - " .. tostring(text))
 end
+local function yield()
+    pcall(function()
+        task.wait()
+    end)
+end
 local function httpGet(url)
-    if type(request) == "function" then
-        local r = request({Url = url, Method = "GET"})
-        return r.Body or r.body
+    local ok, res = pcall(function()
+        if type(request) == "function" then
+            local r = request({Url = url, Method = "GET", Timeout = 20})
+            return r.Body or r.body
+        end
+        if type(http_request) == "function" then
+            local r = http_request({Url = url, Method = "GET", Timeout = 20})
+            return r.Body or r.body
+        end
+        if syn and syn.request then
+            local r = syn.request({Url = url, Method = "GET", Timeout = 20})
+            return r.Body or r.body
+        end
+        return game:HttpGet(url)
+    end)
+    if ok and type(res) == "string" and #res > 0 then
+        return res
     end
-    if type(http_request) == "function" then
-        local r = http_request({Url = url, Method = "GET"})
-        return r.Body or r.body
+    return nil, res
+end
+local function validPayload(s)
+    if type(s) ~= "string" then
+        return false
     end
-    if syn and syn.request then
-        local r = syn.request({Url = url, Method = "GET"})
-        return r.Body or r.body
+    if #s < 1000 or #s > 5000000 then
+        return false
     end
-    return game:HttpGet(url)
+    if s:find("[^A-Za-z0-9%+/= \r\n\t]") then
+        return false
+    end
+    return true
 end
 local B64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 local REV = {}
 for i = 1, #B64 do REV[B64:sub(i, i)] = i - 1 end
 local function b64d(data)
     data = data:gsub("%s+", "")
-    local out, i = {}, 1
+    local out, i, n = {}, 1, 0
     while i <= #data do
         local c1 = REV[data:sub(i, i)] or 0
         local c2 = REV[data:sub(i + 1, i + 1)] or 0
@@ -55,6 +78,8 @@ local function b64d(data)
         if pad < 2 then out[#out + 1] = string.char(math.floor(t / 256) % 256) end
         if pad < 1 then out[#out + 1] = string.char(t % 256) end
         i = i + 4
+        n = n + 1
+        if n % 4096 == 0 then yield() end
     end
     return table.concat(out)
 end
@@ -73,6 +98,7 @@ local function xorCrypt(data, key)
             end
         end
         out[i] = string.char(r)
+        if i % 8192 == 0 then yield() end
     end
     return table.concat(out)
 end
@@ -82,34 +108,46 @@ local function inList(id, list)
     end
     return false
 end
+local function run(entry, label)
+    notify("SparkRouter", label .. " detected, downloading update", 5)
+    yield()
+    local blob, err = httpGet(entry.raw_url)
+    if not blob then
+        notify("SparkRouter", "Download failed: " .. tostring(err):sub(1, 120), 8)
+        return
+    end
+    notify("SparkRouter", "Downloaded " .. #blob .. " bytes, decrypting", 5)
+    yield()
+    if not validPayload(blob) then
+        notify("SparkRouter", "Payload invalid, got " .. #blob .. " bytes starting with: " .. blob:sub(1, 60), 8)
+        return
+    end
+    local source = blob
+    if entry.encrypted then
+        local ok, res = pcall(function()
+            return xorCrypt(b64d(blob), entry.key)
+        end)
+        if not ok or type(res) ~= "string" or #res == 0 then
+            notify("SparkRouter", "Decrypt failed: " .. tostring(res):sub(1, 120), 8)
+            return
+        end
+        source = res
+    end
+    notify("SparkRouter", "Decrypted " .. #source .. " bytes, executing", 5)
+    yield()
+    local fn, compErr = loadstring(source)
+    if not fn then
+        notify("SparkRouter", "Compile failed: " .. tostring(compErr):sub(1, 200), 8)
+        return
+    end
+    return fn()
+end
 local gid = game.GameId
 local pid = game.PlaceId
 if inList(gid, CONFIG.DANDY.gameIds) or inList(pid, CONFIG.DANDY.placeIds) then
-    notify("SparkRouter", "Dandy's World detected, loading latest update", 5)
-    local blob = httpGet(CONFIG.DANDY.raw_url)
-    assert(type(blob) == "string" and #blob > 0, "[SparkRouter] empty response")
-    local source = blob
-    if CONFIG.DANDY.encrypted then
-        source = xorCrypt(b64d(blob), CONFIG.DANDY.key)
-    end
-    assert(type(source) == "string" and #source > 0, "[SparkRouter] decrypt failed")
-    notify("SparkRouter", "Fetched " .. #source .. " bytes, executing", 5)
-    local fn, err = loadstring(source)
-    if not fn then error("[SparkRouter] compile failed: " .. tostring(err)) end
-    return fn()
+    return run(CONFIG.DANDY, "Dandy's World")
 elseif inList(gid, CONFIG.BIKE.gameIds) or inList(pid, CONFIG.BIKE.placeIds) then
-    notify("SparkRouter", "Bike Universe detected, loading latest update", 5)
-    local blob = httpGet(CONFIG.BIKE.raw_url)
-    assert(type(blob) == "string" and #blob > 0, "[SparkRouter] empty response")
-    local source = blob
-    if CONFIG.BIKE.encrypted then
-        source = xorCrypt(b64d(blob), CONFIG.BIKE.key)
-    end
-    assert(type(source) == "string" and #source > 0, "[SparkRouter] decrypt failed")
-    notify("SparkRouter", "Fetched " .. #source .. " bytes, executing", 5)
-    local fn, err = loadstring(source)
-    if not fn then error("[SparkRouter] compile failed: " .. tostring(err)) end
-    return fn()
+    return run(CONFIG.BIKE, "Bike Universe")
 else
     notify("SparkRouter", "Unsupported game " .. tostring(gid), 8)
     return
