@@ -10,12 +10,14 @@ This code is provided "as is" without warranty of any kind, either expressed or 
 ### 3. Limitation of Liability
 In no event shall the authors or copyright holders be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software. You assume all responsibility and liability for any misuse, damage, or legal consequences resulting from the execution or modification of this code.
 
-## Files (two, one per game)
+## Files (two scripts, plus Shelly's lines and portrait)
 
 | File | What it is |
 |---|---|
 | `DandysWorld.lua` | DandyHub source, obfuscated with luaobfuscator.com. One fetch, runs. |
 | `BikeUniverse.lua` | Bike script source, obfuscated with luaobfuscator.com. One fetch, runs. |
+| `Text Lines.txt` | Shelly's lines, sorted by action. Add a line, she says it. |
+| `Shelly.png` | Her portrait for the hub panel. |
 
 No router, no multi-hop fetching, no notifications — each file is fully self-contained: download, execute.
 
