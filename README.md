@@ -11,7 +11,7 @@ Repo: **https://github.com/abs0lute3/spark-router** (public — executors fetch 
 | Game | Universe (GameId) | Main PlaceId | Behavior |
 |---|---|---|---|
 | Dandy's World | 5569032992 | 16116270224 | Roblox notification, downloads the latest `payloads/dandy-v1.enc`, decrypts with embedded key, executes |
-| Bike Universe | 10768284407 | 98628861455414 | **Nothing yet** — "coming soon" notification, reserved for another AI agent |
+| Bike Universe | 10768284407 | 98628861455414 | Roblox notification, downloads the latest `payloads/bike-v1.enc`, decrypts with embedded key, executes |
 | Anything else | — | — | "Unsupported game" notification, stops |
 
 `payloads/` holds the encrypted blobs (`Base64(XOR(source, key))`). Same filename = same URL forever — updating is just overwrite + push.
