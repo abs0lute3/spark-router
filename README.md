@@ -1,39 +1,36 @@
-# SparkRouter — private repo
+# SparkRouter — public repo
 
 Game-detecting loader for the user's Roblox scripts. **Lua here is a Roblox script** (runs in the executor). The Python push tooling lives in `Push (Read this for AI agents)/`.
 
+Repo: **https://github.com/abs0lute3/spark-router** (public — executors fetch `Router.lua` and `payloads/*.enc` via `raw.githubusercontent.com` with plain `game:HttpGet`, no auth).
+
 ## What it does
 
-`Router.lua` checks `game.GameId` (with `game.PlaceId` fallback):
+`Router.lua` (commentless, single file) checks `game.GameId` (with `game.PlaceId` fallback):
 
 | Game | Universe (GameId) | Main PlaceId | Behavior |
 |---|---|---|---|
-| Dandy's World | 5569032992 | 16116270224 | Sends a Roblox notification, downloads the **latest** DandyHub paste, decrypts, executes |
-| Bike Universe | 10768284407 | 98628861455414 | **Nothing yet** — shows "coming soon", reserved for another AI agent |
+| Dandy's World | 5569032992 | 16116270224 | Roblox notification, downloads the latest `payloads/dandy-v1.enc`, decrypts with embedded key, executes |
+| Bike Universe | 10768284407 | 98628861455414 | **Nothing yet** — "coming soon" notification, reserved for another AI agent |
 | Anything else | — | — | "Unsupported game" notification, stops |
 
-## Setup (already live on GitHub)
+`payloads/` holds the encrypted blobs (`Base64(XOR(source, key))`). Same filename = same URL forever — updating is just overwrite + push.
 
-Repo: **https://github.com/abs0lute3/spark-router** (private). It was created and pushed from this folder. Day-to-day you just edit + push:
+## Updating a payload (for AI agents)
 
 ```bash
-cd SparkRouter
-git commit -am "describe your change"
+cd "Push (Read this for AI agents)"
+python push.py publish dandy-v1 ../DandyHub.lua   # or: push.bat publish dandy-v1 ..\DandyHub.lua
+cd ../SparkRouter
+git add payloads/dandy-v1.enc
+git commit -m "update dandy-v1"
 git push
 ```
 
-## Wire it to your latest paste
-
-1. `cd "Push (Read this for AI agents)"` → `push.bat new dandy-v1 ..\DandyHub.lua`
-2. `push.bat list` won't show secrets — open `pastes.json`, copy `raw_url` + `key` for `dandy-v1`.
-3. Paste them into `Router.lua` → `CONFIG.DANDY.raw_url` / `CONFIG.DANDY.key`.
-4. `git commit -am "point router at latest dandy paste" && git push`.
-5. After later `push.bat update dandy-v1 ...` runs, the URL is unchanged — you only re-edit `Router.lua` if you rotated the key (`--new-key`).
+Key rotation: `push.py publish dandy-v1 ../DandyHub.lua --key NEWKEY`, then also update `CONFIG.DANDY.key` in `Router.lua`, commit both, push. Old key = router can't decrypt.
 
 ## The loadstring (what users execute)
 
-```
+```lua
 loadstring(game:HttpGet("https://raw.githubusercontent.com/abs0lute3/spark-router/main/Router.lua"))()
 ```
-
-Note: the repo is **private**, so its raw URL needs access — either keep just this router file in a public repo and everything else private, or append a read-only personal access token you never share publicly. The payload pastes stay encrypted on rentry regardless.
